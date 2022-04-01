@@ -1,3 +1,4 @@
+#Run this with any shuttle file input to get table of raw data
 library(stringr)
 library(tidyr)
 library(dplyr)
