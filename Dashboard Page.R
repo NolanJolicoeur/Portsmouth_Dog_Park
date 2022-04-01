@@ -1,3 +1,4 @@
+#Load in Functions
 library(shiny)
 library(datasets)
 library(stringr)
@@ -5,7 +6,9 @@ library(tidyr)
 library(dplyr)
 library(sqldf)
 
+#Code for ui (look of the dashboard)
 ui <- shinyUI(fluidPage(
+  #Main Page Title and tab to upload files for dog park data and weather data. 
   titlePanel("Dog Park Dashboard"),
   tabsetPanel(
     tabPanel("Upload File",
@@ -40,6 +43,7 @@ ui <- shinyUI(fluidPage(
                )
              )
     ),
+    #Tab Panel for Daily dog park data breakdown.  Includes y and x-axis selector and graph. 
     tabPanel("Daily",
              pageWithSidebar(
                headerPanel('Choose Plot'),
@@ -53,6 +57,7 @@ ui <- shinyUI(fluidPage(
                )
              )
     ),
+    #Tab Panel for Monthly dog park data breakdown.  Includes y and x-axis selector and graph.
     tabPanel("Monthly",
              pageWithSidebar(
                headerPanel('Choose Plot'),
@@ -70,10 +75,10 @@ ui <- shinyUI(fluidPage(
   )
 )
 )
-
+#Sever code (makes the ui work)
 server <- shinyServer(function(input, output, session) {
   
-  
+  #this code block takes the input data file and converts it into a dataframe for daily breakdown.
   data1 <- reactive({ 
     req(input$file1) 
     
@@ -97,7 +102,7 @@ server <- shinyServer(function(input, output, session) {
     
     
  
-    
+    #Labels for selction options
     updateSelectInput(session, inputId = 'xcol1', label = 'X Variable 1',
                       choices = names(df1), selected = names(df1))
     updateSelectInput(session, inputId = 'ycol1', label = 'Y Variable 1',
@@ -106,7 +111,7 @@ server <- shinyServer(function(input, output, session) {
     
     return(df1)
   })
-  
+  #Plot and graph data 
   output$contents <- renderPlot({
     data1()
   })
@@ -117,6 +122,7 @@ server <- shinyServer(function(input, output, session) {
     plot(x)
     
   })
+  #this code block takes the input data file and converts it into a dataframe for monthly breakdown.
   data2 <- reactive({ 
     req(input$file1) 
     
@@ -140,7 +146,7 @@ server <- shinyServer(function(input, output, session) {
     
     
   
-    
+    #Labels for selction options
     updateSelectInput(session, inputId = 'xcol2', label = 'X Variable 2',
                       choices = names(df2), selected = names(df))
     updateSelectInput(session, inputId = 'ycol2', label = 'Y Variable 2',
@@ -148,7 +154,7 @@ server <- shinyServer(function(input, output, session) {
     
     return(df2)
   })
-  
+  #Plot and graph data
   output$contents <- renderPlot({
     data2()
   })
