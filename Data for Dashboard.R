@@ -6,6 +6,9 @@ library(sqldf)
 library(lubridate)
 library(ggplot2)
 library(data.table)
+library(tidyverse)
+library(forcats)
+library(gridExtra)
 
 #Get base dataframe
 df1 <- read.delim(file.choose())
@@ -13,13 +16,6 @@ df1 <- as.data.frame(df1)
 df1 <- df1[grep('00000',df1$D),]
 df1 <- as.data.frame(df1)
 df1 <- df1 %>% separate(df1, c('Year','Month','Day', 'Time','Blank', 'TrafX_Count','Blank2')) 
-#b <- as.data.frame(b)
-#b <- df1[grep('00000',b$D),]
-#b <- as.data.frame(b)
-#b <- df1 %>% separate(b, c('Year','Month','Day', 'Time','Blank', 'TrafX_Count','Blank2')) 
-#df1 <- sqldf("select * from a
-             #union all 
-             #select * from b")
 df1$TrafX_Count <- as.numeric(df1$TrafX_Count)
 df1 <- sqldf("select Year, Month, Day, Time, TrafX_Count from df1")
 df1$Human_Count <- round((0.3673 * df1$TrafX_Count),0)
@@ -36,11 +32,13 @@ df1<-df1 %>% mutate(across(where(is.character), str_remove_all, pattern = fixed(
 weekdays1 <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
 df1$W_Day <- factor((weekdays(df1$Date) %in% weekdays1), 
                    levels=c(FALSE, TRUE), labels=c('Weekend', 'Weekday'))
+df1$Time <- as.numeric(df1$Time)
+df1$Time_of_Day <- with(df1, ifelse(Time <= 3, '1- (12AM - 2AM)', ifelse(Time <= 6, '2- (3AM - 5AM)', ifelse(Time <= 9, '3- (6AM - 8AM)', ifelse(Time <= 12, '4- (9AM - 11AM)', ifelse(Time <= 15, '5- (12PM - 2PM)', ifelse(Time <= 18, '6- (3PM - 5PM)', ifelse(Time <= 21, '7- (6PM - 8PM)', ifelse(Time <= 24, '8- (9PM - 11PM)')))))))))
 View(df1)
 
-#Hourly data with graphs
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                             #Hourly data with graphs
 #Group data by time
-dfavghourly <- sqldf("select Time, avg(TrafX_Count), avg(Human_Count), avg(Dog_Count), avg(Car_Count) from df1 group by Time")
+dfavghourly <- sqldf("select Time, Time_of_Day, avg(TrafX_Count), avg(Human_Count), avg(Dog_Count), avg(Car_Count) from df1 group by Time")
 dfavghourly <- rename(dfavghourly, 'TrafX_Count' = 'avg(TrafX_Count)')
 dfavghourly <- rename(dfavghourly, 'Human_Count' = 'avg(Human_Count)')
 dfavghourly <- rename(dfavghourly, 'Dog_Count' = 'avg(Dog_Count)')
@@ -65,6 +63,26 @@ colnames(hourlyavgstattable) <- c('Dogs', 'Humans', 'Cars')
 rownames(hourlyavgstattable) <- c('Max', 'Min')
 hourlyavgstattable <- as.table(hourlyavgstattable)
 hourlyavgstattable
+
+#Group data by time of day 
+dfavgtimeofday1 <- sqldf("select Time, Time_of_Day, avg(TrafX_Count), avg(Human_Count), avg(Dog_Count), avg(Car_Count) from df1 group by Time")
+dfavgtimeofday1 <- rename(dfavgtimeofday1, 'TrafX_Count' = 'avg(TrafX_Count)')
+dfavgtimeofday1<- rename(dfavgtimeofday1, 'Human_Count' = 'avg(Human_Count)')
+dfavgtimeofday1 <- rename(dfavgtimeofday1, 'Dog_Count' = 'avg(Dog_Count)')
+dfavgtimeofday1 <- rename(dfavgtimeofday1, 'Car_Count' = 'avg(Car_Count)')
+dfavgtimeofday <- sqldf("select  Time, Time_of_Day, sum(TrafX_Count), sum(Human_Count), sum(Dog_Count), sum(Car_Count) from dfavgtimeofday1 group by Time_of_Day")
+dfavgtimeofday <- rename(dfavgtimeofday, 'TrafX_Count' = 'sum(TrafX_Count)')
+dfavgtimeofday <- rename(dfavgtimeofday, 'Human_Count' = 'sum(Human_Count)')
+dfavgtimeofday <- rename(dfavgtimeofday, 'Dog_Count' = 'sum(Dog_Count)')
+dfavgtimeofday <- rename(dfavgtimeofday, 'Car_Count' = 'sum(Car_Count)')
+dfavgtimeofday <- rename(dfavgtimeofday, 'Key' = 'Time_of_Day')
+dfavgtimeofday <- dfavgtimeofday[order(dfavgtimeofday$Time),]
+#Graph 
+dfavgtimeofday_Tall <- dfavgtimeofday %>% gather(key = Count, value = Value, c(Human_Count, Dog_Count, Car_Count))
+dfavgtimeofday_graph <- ggplot(dfavgtimeofday_Tall, aes(Count, Value, fill = Key))+
+  labs(title = 'Average Attendance By Time of Day', x = 'Type', y = 'Count', color = 'Key:')+
+  geom_col(position = 'dodge')
+dfavgtimeofday_graph
 
 #Daily data with graphs 
 #Group data by date
@@ -135,5 +153,36 @@ dfavgW_Day_graph <- ggplot(dfavgW_Day_Tall, aes(Count, Value, fill = Key))+
   geom_col(position = 'dodge')
 dfavgW_Day_graph
 
-
-
+#Group by Weekday or Weekend and Time of Day
+df2 <- df1
+df2$Date_Time_of_Day <- paste(df2$Date, df2$Time_of_Day)
+df2$W_Day_Time_of_Day <- paste(df2$W_Day, df2$Time_of_Day)
+dfavgW_Day_Time_of_Day1 <- sqldf("select W_Day_Time_of_Day, Time_of_Day, Date_Time_of_Day, Date, Time, W_Day, sum(TrafX_Count), sum(Human_Count), sum(Dog_Count), sum(Car_Count) from df2 group by Date_Time_of_Day")
+dfavgW_Day_Time_of_Day1 <- rename(dfavgW_Day_Time_of_Day1, 'TrafX_Count' = 'sum(TrafX_Count)')
+dfavgW_Day_Time_of_Day1 <- rename(dfavgW_Day_Time_of_Day1, 'Human_Count' = 'sum(Human_Count)')
+dfavgW_Day_Time_of_Day1 <- rename(dfavgW_Day_Time_of_Day1, 'Dog_Count' = 'sum(Dog_Count)')
+dfavgW_Day_Time_of_Day1 <- rename(dfavgW_Day_Time_of_Day1, 'Car_Count' = 'sum(Car_Count)')
+dfavgW_Day_Time_of_Day <- sqldf("select Time_of_Day, Time, W_Day, avg(TrafX_Count), avg(Human_Count), avg(Dog_Count), avg(Car_Count) from dfavgW_Day_Time_of_Day1 group by W_Day_Time_of_Day")
+dfavgW_Day_Time_of_Day <- rename(dfavgW_Day_Time_of_Day, 'TrafX_Count' = 'avg(TrafX_Count)')
+dfavgW_Day_Time_of_Day <- rename(dfavgW_Day_Time_of_Day, 'Human_Count' = 'avg(Human_Count)')
+dfavgW_Day_Time_of_Day <- rename(dfavgW_Day_Time_of_Day, 'Dog_Count' = 'avg(Dog_Count)')
+dfavgW_Day_Time_of_Day <- rename(dfavgW_Day_Time_of_Day, 'Car_Count' = 'avg(Car_Count)')
+#Graph for Weekends
+dfavgW_Day_Time_of_Day_Weekend <-sqldf("select Time_of_Day, Time, W_Day, TrafX_Count, Human_Count, Dog_Count, Car_Count from dfavgW_Day_Time_of_Day where W_Day == 'Weekend'")
+dfavgW_Day_Time_of_Day_Weekend <- rename(dfavgW_Day_Time_of_Day_Weekend, 'Key' = 'Time_of_Day')
+dfavgW_Day_Time_of_Day_Weekend_Tall <- dfavgW_Day_Time_of_Day_Weekend %>% gather(key = Count, value = Value, c(Human_Count, Dog_Count, Car_Count))
+dfavgW_Day_Time_of_Day_Weekend_Tall_graph <- ggplot(dfavgW_Day_Time_of_Day_Weekend_Tall, aes(Count, Value, fill = Key))+
+  labs(title = 'Average Attendance on Weekends Per Time of Day', x = 'Time', y = 'Count', color = 'Key:')+
+  geom_col(position = 'dodge')+
+  lims(y = c(0,100))
+dfavgW_Day_Time_of_Day_Weekend_Tall_graph
+#Graph for Weekdays 
+dfavgW_Day_Time_of_Day_Weekday <-sqldf("select Time_of_Day, Time, W_Day, TrafX_Count, Human_Count, Dog_Count, Car_Count from dfavgW_Day_Time_of_Day where W_Day == 'Weekday'")
+dfavgW_Day_Time_of_Day_Weekday <- rename(dfavgW_Day_Time_of_Day_Weekday, 'Key' = 'Time_of_Day')
+dfavgW_Day_Time_of_Day_Weekday_Tall <- dfavgW_Day_Time_of_Day_Weekday %>% gather(key = Count, value = Value, c(Human_Count, Dog_Count, Car_Count))
+dfavgW_Day_Time_of_Day_Weekday_Tall_graph <- ggplot(dfavgW_Day_Time_of_Day_Weekday_Tall, aes(Count, Value, fill = Key))+
+  labs(title = 'Average Attendance on Weekends Per Time of Day', x = 'Time', y = 'Count', color = 'Key:')+
+  geom_col(position = 'dodge')+
+  lims(y = c(0,100))
+dfavgW_Day_Time_of_Day_Weekday_Tall_graph
+grid.arrange(dfavgW_Day_Time_of_Day_Weekend_Tall_graph, dfavgW_Day_Time_of_Day_Weekday_Tall_graph, ncol=2)
