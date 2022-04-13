@@ -1,3 +1,5 @@
+#February and March people in park total, busiest day of the week, max values
+#Noaa for weather data or Tony Patraca
 #Load Packages
 library(stringr)
 library(tidyr)
@@ -10,14 +12,30 @@ library(tidyverse)
 library(forcats)
 library(gridExtra)
 
-#Get base dataframe
-df1 <- read.delim(file.choose())
-df1 <- as.data.frame(df1)
-df1 <- df1[grep('00000',df1$D),]
-df1 <- as.data.frame(df1)
-df1 <- df1 %>% separate(df1, c('Year','Month','Day', 'Time','Blank', 'TrafX_Count','Blank2')) 
-df1$TrafX_Count <- as.numeric(df1$TrafX_Count)
-df1 <- sqldf("select Year, Month, Day, Time, TrafX_Count from df1")
+df <- data.frame(Year = character(),
+                 Month = character(),
+                 Day = character(), 
+                 Time = character(), 
+                 TrafX_Count = integer())
+stopifnot(class(df) == 'data.frame')
+stopifnot(length(colnames(df)) == 5)
+files <- dir('Shuttle_Files')
+setwd('Shuttle_Files')
+for (t in files){
+  otherdf <- read.delim(t)
+  otherdf <- as.data.frame(otherdf)
+  otherdf <- otherdf[grep('00000',otherdf$D),]
+  otherdf <- as.data.frame(otherdf)
+  otherdf <- otherdf %>% separate(otherdf, c('Year','Month','Day', 'Time','Blank', 'TrafX_Count','Blank2')) 
+  otherdf$TrafX_Count <- as.numeric(otherdf$TrafX_Count)
+  otherdf <- sqldf("select Year, Month, Day, Time, TrafX_Count from otherdf")
+  df1 = sqldf("
+               SELECT * FROM df
+               UNION
+               SELECT * FROM otherdf
+               ")
+} 
+setwd('../')
 df1$Human_Count <- round((0.3673 * df1$TrafX_Count),0)
 df1$Dog_Count <- round((0.4591 * df1$TrafX_Count),0)
 df1$Car_Count <- round((0.2959 * df1$TrafX_Count),0)
@@ -36,9 +54,15 @@ df1$Time <- as.numeric(df1$Time)
 df1$Time_of_Day <- with(df1, ifelse(Time <= 3, '1- (12AM - 2AM)', ifelse(Time <= 6, '2- (3AM - 5AM)', ifelse(Time <= 9, '3- (6AM - 8AM)', ifelse(Time <= 12, '4- (9AM - 11AM)', ifelse(Time <= 15, '5- (12PM - 2PM)', ifelse(Time <= 18, '6- (3PM - 5PM)', ifelse(Time <= 21, '7- (6PM - 8PM)', ifelse(Time <= 24, '8- (9PM - 11PM)')))))))))
 View(df1)
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                             #Hourly data with graphs
+df1$Time_Official <- paste(df1$Date, df1$Time)  
+Official_df <- sqldf("select Year, Month, Day, Time, sum(TrafX_Count), sum(Human_Count), sum(Dog_Count), sum(Car_Count), Date, Day_Name, W_Day, Time_of_Day, Time_Official from df1 group by Time_Official")
+Official_df <- rename(Official_df, 'TrafX_Count' = 'sum(TrafX_Count)')
+Official_df <- rename(Official_df, 'Human_Count' = 'sum(Human_Count)')
+Official_df <- rename(Official_df, 'Dog_Count' = 'sum(Dog_Count)')
+Official_df <- rename(Official_df, 'Car_Count' = 'sum(Car_Count)')
+#Hourly data with graphs
 #Group data by time
-dfavghourly <- sqldf("select Time, Time_of_Day, avg(TrafX_Count), avg(Human_Count), avg(Dog_Count), avg(Car_Count) from df1 group by Time")
+dfavghourly <- sqldf("select Time, Time_of_Day, avg(TrafX_Count), avg(Human_Count), avg(Dog_Count), avg(Car_Count) from Official_df group by Time")
 dfavghourly <- rename(dfavghourly, 'TrafX_Count' = 'avg(TrafX_Count)')
 dfavghourly <- rename(dfavghourly, 'Human_Count' = 'avg(Human_Count)')
 dfavghourly <- rename(dfavghourly, 'Dog_Count' = 'avg(Dog_Count)')
@@ -65,7 +89,7 @@ hourlyavgstattable <- as.table(hourlyavgstattable)
 hourlyavgstattable
 
 #Group data by time of day 
-dfavgtimeofday1 <- sqldf("select Time, Time_of_Day, avg(TrafX_Count), avg(Human_Count), avg(Dog_Count), avg(Car_Count) from df1 group by Time")
+dfavgtimeofday1 <- sqldf("select Time, Time_of_Day, avg(TrafX_Count), avg(Human_Count), avg(Dog_Count), avg(Car_Count) from Official_df group by Time")
 dfavgtimeofday1 <- rename(dfavgtimeofday1, 'TrafX_Count' = 'avg(TrafX_Count)')
 dfavgtimeofday1<- rename(dfavgtimeofday1, 'Human_Count' = 'avg(Human_Count)')
 dfavgtimeofday1 <- rename(dfavgtimeofday1, 'Dog_Count' = 'avg(Dog_Count)')
@@ -86,7 +110,7 @@ dfavgtimeofday_graph
 
 #Daily data with graphs 
 #Group data by date
-dfdaily <- sqldf('select Date, Day_Name, W_Day, sum(TrafX_Count), sum(Human_Count), sum(Dog_Count), sum(Car_Count) from df1 group by Date')
+dfdaily <- sqldf('select Date, Day_Name, W_Day, sum(TrafX_Count), sum(Human_Count), sum(Dog_Count), sum(Car_Count) from Official_df group by Date')
 dfdaily <- rename(dfdaily, 'TrafX_Count' = 'sum(TrafX_Count)')
 dfdaily <- rename(dfdaily, 'Human_Count' = 'sum(Human_Count)')
 dfdaily <- rename(dfdaily, 'Dog_Count' = 'sum(Dog_Count)')
@@ -181,8 +205,12 @@ dfavgW_Day_Time_of_Day_Weekday <-sqldf("select Time_of_Day, Time, W_Day, TrafX_C
 dfavgW_Day_Time_of_Day_Weekday <- rename(dfavgW_Day_Time_of_Day_Weekday, 'Key' = 'Time_of_Day')
 dfavgW_Day_Time_of_Day_Weekday_Tall <- dfavgW_Day_Time_of_Day_Weekday %>% gather(key = Count, value = Value, c(Human_Count, Dog_Count, Car_Count))
 dfavgW_Day_Time_of_Day_Weekday_Tall_graph <- ggplot(dfavgW_Day_Time_of_Day_Weekday_Tall, aes(Count, Value, fill = Key))+
-  labs(title = 'Average Attendance on Weekends Per Time of Day', x = 'Time', y = 'Count', color = 'Key:')+
+  labs(title = 'Average Attendance on Weekdays Per Time of Day', x = 'Time', y = 'Count', color = 'Key:')+
   geom_col(position = 'dodge')+
   lims(y = c(0,100))
 dfavgW_Day_Time_of_Day_Weekday_Tall_graph
 grid.arrange(dfavgW_Day_Time_of_Day_Weekend_Tall_graph, dfavgW_Day_Time_of_Day_Weekday_Tall_graph, ncol=2)
+
+
+
+
