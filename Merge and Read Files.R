@@ -1,6 +1,5 @@
 library(sqldf)
 library(tidyr)
-files = grep(".TXT", dir('Shuttle_Files'), value = T)
 df <- data.frame(Year = character(),
                  Month = character(),
                  Day = character(), 
@@ -8,6 +7,7 @@ df <- data.frame(Year = character(),
                  TrafX_Count = integer())
 stopifnot(class(df) == 'data.frame')
 stopifnot(length(colnames(df)) == 5)
+setwd('Shuttle_Files')
 for (t in dir('Shuttle_Files')){
   otherdf <- read.delim(t)
   otherdf <- as.data.frame(otherdf)
@@ -21,4 +21,4 @@ for (t in dir('Shuttle_Files')){
                UNION
                SELECT * FROM otherdf
                ")
-}
+} 
