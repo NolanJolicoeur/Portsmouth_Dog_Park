@@ -7,8 +7,9 @@ df <- data.frame(Year = character(),
                  TrafX_Count = integer())
 stopifnot(class(df) == 'data.frame')
 stopifnot(length(colnames(df)) == 5)
+files <- dir('Shuttle_Files')
 setwd('Shuttle_Files')
-for (t in dir('Shuttle_Files')){
+for (t in files){
   otherdf <- read.delim(t)
   otherdf <- as.data.frame(otherdf)
   otherdf <- otherdf[grep('00000',otherdf$D),]
@@ -22,3 +23,4 @@ for (t in dir('Shuttle_Files')){
                SELECT * FROM otherdf
                ")
 } 
+setwd('../')
