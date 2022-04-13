@@ -9,7 +9,8 @@ df <- data.frame(Year = character(),
 stopifnot(class(df) == 'data.frame')
 stopifnot(length(colnames(df)) == 5)
 for (t in dir('Shuttle_Files')){
-  otherdf <- as.data.frame(t)
+  otherdf <- read.delim(t)
+  otherdf <- as.data.frame(otherdf)
   otherdf <- otherdf[grep('00000',otherdf$D),]
   otherdf <- as.data.frame(otherdf)
   otherdf <- otherdf %>% separate(otherdf, c('Year','Month','Day', 'Time','Blank', 'TrafX_Count','Blank2')) 
@@ -20,4 +21,4 @@ for (t in dir('Shuttle_Files')){
                UNION
                SELECT * FROM otherdf
                ")
-} 
+}
