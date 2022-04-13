@@ -1,0 +1,14 @@
+Graphs for now
+1- Average attendance by time of day for people, dogs, cars. 
+2- Daily attendance for people, dogs, cars. (Have it loop around at end of year.  Otherwise it will be too conjested.)
+3- Average people, dogs, cars by day of week. (Monday, Tuesday,... etc)
+4- Average attendance for people, dogs, cars on weekdays vs weekends
+5- Average attendance by time of day for people, dogs, cars on weekdays vs weekends. 
+6- Total attendance by the week for people, dogs, cars.
+7- Total attendance by the month for people, dogs, cars. 
+Graphs for later
+8- Total attendance by the year for people, dogs, cars. 
+9- Total season attendance for people, dogs, cars. (Summer[June, July, August], Fall[September, October, November], Winter[December, January, February], Spring[March, April, May])
+10- Attendance by time of day divided up by season for people, dogs, cars. 
+11- Average attendance on good weather days vs bad. 
+12- Attendance when temperature is <32, >32 and <50, >50 and <70, and >70.
