@@ -17,7 +17,7 @@ for (t in files){
   otherdf <- otherdf %>% separate(otherdf, c('Year','Month','Day', 'Time','Blank', 'TrafX_Count','Blank2')) 
   otherdf$TrafX_Count <- as.numeric(otherdf$TrafX_Count)
   otherdf <- sqldf("select Year, Month, Day, Time, TrafX_Count from otherdf")
-  df = sqldf("
+  df1 = sqldf("
                SELECT * FROM df
                UNION
                SELECT * FROM otherdf
