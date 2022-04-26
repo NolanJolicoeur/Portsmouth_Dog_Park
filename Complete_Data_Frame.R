@@ -6,21 +6,23 @@ library(stringr)
 library(sqldf)
 
 #Manual Data
-df4 <- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQeQ0YiEBVASJN0EukDk3Y6CB8rf9aaQJ-d0ViW_nWYf_3gsHHcYu87eKQIgzFOpM_mV9stuA75x0zw/pub?gid=0&single=true&output=csv")
-df4$Day_Name <- weekdays(df4$Date, abbreviate = FALSE)
+df1 <- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQeQ0YiEBVASJN0EukDk3Y6CB8rf9aaQJ-d0ViW_nWYf_3gsHHcYu87eKQIgzFOpM_mV9stuA75x0zw/pub?gid=0&single=true&output=csv")
+df1$Day_Name <- weekdays(df1$Date, abbreviate = FALSE)
 weekdays1 <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
-df4$Day_Type <- factor((weekdays(df4$Date, abbreviate = FALSE) %in% weekdays1), 
+df1$Day_Type <- factor((weekdays(df1$Date, abbreviate = FALSE) %in% weekdays1), 
                       levels=c(FALSE, TRUE), labels=c('Weekend', 'Weekday'))
-df4$People_Ratio <- df4$People/df4$TrafX_Count
-df4$Dog_Ratio <- df4$Dogs/df4$TrafX_Count
-df4$Cars_Ratio <- df4$Cars/df4$TrafX_Count
-df4$Error <- (df4$Actual_Total-df4$TrafX_Count)/df4$TrafX_Count
-people_to_count_ratio <- (sum(df4$People))/(sum(df4$TrafX_Count))
-dogs_to_count_ratio <- (sum(df4$Dogs))/(sum(df4$TrafX_Count))
-cars_to_count_ratio <- (sum(df4$Cars))/(sum(df4$TrafX_Count))
+df1$People_Ratio <- df1$People/df1$TrafX_Count
+df1$Dog_Ratio <- df1$Dogs/df1$TrafX_Count
+df1$Cars_Ratio <- df1$Cars/df1$TrafX_Count
+df1$Error <- (df1$Actual_Total-df1$TrafX_Count)/df1$TrafX_Count
+people_to_count_ratio <- (sum(df1$People))/(sum(df1$TrafX_Count))
+dogs_to_count_ratio <- (sum(df1$Dogs))/(sum(df1$TrafX_Count))
+cars_to_count_ratio <- (sum(df1$Cars))/(sum(df1$TrafX_Count))
 ratio_table <- matrix(c(people_to_count_ratio, dogs_to_count_ratio, cars_to_count_ratio), nrow = 3)
 colnames(ratio_table) <- c('Ratio')
 rownames(ratio_table) <- c('People', 'Dogs', 'Cars')
+
+
 #Create and view data frame for shuttle files
 df <- data.frame(Year = character(),
                  Month = character(),
@@ -46,9 +48,9 @@ for (t in files){
                ")
 } 
 setwd('../')
-df3$Human_Count <- round(((sum(df4$People)/sum(df4$TrafX_Count)) * df3$TrafX_Count),0)
-df3$Dog_Count <- round(((sum(df4$Dogs)/sum(df4$TrafX_Count)) * df3$TrafX_Count),0)
-df3$Car_Count <- round(((sum(df4$Cars)/sum(df4$TrafX_Count)) * df3$TrafX_Count),0)
+df3$Human_Count <- round(((sum(df1$People)/sum(df1$TrafX_Count)) * df3$TrafX_Count),0)
+df3$Dog_Count <- round(((sum(df1$Dogs)/sum(df1$TrafX_Count)) * df3$TrafX_Count),0)
+df3$Car_Count <- round(((sum(df1$Cars)/sum(df1$TrafX_Count)) * df3$TrafX_Count),0)
 df3$Year <- str_glue("20{df3$Year}")
 df3$Day <- str_glue("-{df3$Day}")
 df3$Month <- str_glue("-{df3$Month}")
@@ -103,13 +105,15 @@ df2$Time <- as.numeric(df2$Time)
 df2$Date_Time <- paste(df2$Date, df2$Time)
 
 #Join data frames
-df1 <- sqldf("select * from df2
+df4 <- sqldf("select * from df2
              LEFT JOIN df3
              ON df2.Date_Time = df3.Date_Time")
-df1 <- df1 %>% drop_na()
-duplicates <- duplicated(colnames(df1))
-df1 <- df1[!duplicates]
-saveRDS(df1, file = 'Dog_Park_Data_File.RDS')
+df4 <- df4 %>% drop_na()
+duplicates <- duplicated(colnames(df4))
+df4 <- df4[!duplicates]
+
+#Save as RDS
+saveRDS(df4, file = 'Dog_Park_Data_File_04262022.RDS')
 
 
 
