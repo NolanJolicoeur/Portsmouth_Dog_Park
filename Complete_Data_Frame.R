@@ -101,14 +101,14 @@ df2 <- rename(df2, 'Precipitation' = 'p01i')
 df2 <- rename(df2, 'Wind' = 'gust')
 df2$Time <- as.numeric(df2$Time)
 df2$Date_Time <- paste(df2$Date, df2$Time)
-df2 <- df2[,c('Temp', 'Precipitation','Wind', 'Date_Time')]
 
 #Join data frames
 df1 <- sqldf("select * from df2
              LEFT JOIN df3
              ON df2.Date_Time = df3.Date_Time")
 df1 <- df1 %>% drop_na()
-
+duplicates <- duplicated(colnames(df1))
+df1 <- df1[!duplicates]
 saveRDS(df1, file = 'Dog_Park_Data_File.RDS')
 
 
