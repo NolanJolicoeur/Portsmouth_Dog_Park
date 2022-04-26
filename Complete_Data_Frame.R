@@ -85,7 +85,7 @@ df2 <- rename(df2, 'Precipitation' = 'p01i')
 df2 <- rename(df2, 'Wind' = 'gust')
 df2$Time <- as.numeric(df2$Time)
 df2$Date_Time <- paste(df2$Date, df2$Time)
-
+df2 <- df2[,c('Temp', 'Precipitation','Wind', 'Date_Time')]
 
 #Join data frames
 df1 <- sqldf("select * from df2
