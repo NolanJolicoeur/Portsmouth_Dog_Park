@@ -1,7 +1,9 @@
 library(sqldf)
 library(tidyr)
-process <- function(data){
-  df <- as.data.frame(data)
+process <- function(data1){
+  data1 <- data1
+  df <- read.delim('~/Dog_Park/Shuttle_Files/{data1}')
+  df <- as.data.frame(df)
   df <- df[grep('00000',df$D),]
   df <- as.data.frame(df)
   df <- df %>% separate(df, c('Year','Month','Day', 'Time','Blank', 'TrafX_Count','Blank2')) 
@@ -11,3 +13,5 @@ process <- function(data){
 }
 d <- read.delim('~/Dog_Park/Shuttle_Files/ShuttleFile1.TXT')
 a <- process(d)
+
+

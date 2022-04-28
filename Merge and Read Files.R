@@ -17,11 +17,11 @@ for (t in files){
   otherdf <- otherdf %>% separate(otherdf, c('Year','Month','Day', 'Time','Blank', 'TrafX_Count','Blank2')) 
   otherdf$TrafX_Count <- as.numeric(otherdf$TrafX_Count)
   otherdf <- sqldf("select Year, Month, Day, Time, TrafX_Count from otherdf")
-  df1 = sqldf("
+  df = sqldf("
                SELECT * FROM df
                UNION
                SELECT * FROM otherdf
                ")
 } 
 setwd('../')
-saveRDS(df1, 'File_Log.R')
+saveRDS(df, 'File_Log.R')
