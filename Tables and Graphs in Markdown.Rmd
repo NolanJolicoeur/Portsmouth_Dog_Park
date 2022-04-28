@@ -221,7 +221,7 @@ attendance_by_month <- rename(attendance_by_month, 'Human_Count' = 'sum(Human_Co
 attendance_by_month <- rename(attendance_by_month, 'Dog_Count' = 'sum(Dog_Count)')
 attendance_by_month <- rename(attendance_by_month, 'Car_Count' = 'sum(Car_Count)')
 #Graph 
-attendance_by_month_graph <- ggplot(attendance_by_month, aes(Date, group = 1))+
+attendance_by_month_graph <- ggplot(attendance_by_month, aes(Month, group = 1))+
   labs(title = 'Total Attendance by the Month', x = 'Month', y = 'Total Attendance', color = 'Key:')+
   geom_line(aes(y = Dog_Count), color = 'green')+
   geom_point(aes(y = Dog_Count, color = 'Dogs'))+
