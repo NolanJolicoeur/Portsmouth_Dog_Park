@@ -24,30 +24,8 @@ rownames(ratio_table) <- c('People', 'Dogs', 'Cars')
 
 
 #Create and view data frame for shuttle files
-df <- data.frame(Year = character(),
-                 Month = character(),
-                 Day = character(), 
-                 Time = character(), 
-                 TrafX_Count = integer())
-stopifnot(class(df) == 'data.frame')
-stopifnot(length(colnames(df)) == 5)
-files <- dir('Shuttle_Files')
-setwd('Shuttle_Files')
-for (t in files){
-  otherdf <- read.delim(t)
-  otherdf <- as.data.frame(otherdf)
-  otherdf <- otherdf[grep('00000',otherdf$D),]
-  otherdf <- as.data.frame(otherdf)
-  otherdf <- otherdf %>% separate(otherdf, c('Year','Month','Day', 'Time','Blank', 'TrafX_Count','Blank2')) 
-  otherdf$TrafX_Count <- as.numeric(otherdf$TrafX_Count)
-  otherdf <- sqldf("select Year, Month, Day, Time, TrafX_Count from otherdf")
-  df3 = sqldf("
-               SELECT * FROM df
-               UNION
-               SELECT * FROM otherdf
-               ")
-} 
-setwd('../')
+df3 <- readRDS('Data_Log.R')
+df3 <- sqldf("select Year, Month, Day, Time, TrafX_Count from df3")
 df3$Human_Count <- round(((sum(df1$People)/sum(df1$TrafX_Count)) * df3$TrafX_Count),0)
 df3$Dog_Count <- round(((sum(df1$Dogs)/sum(df1$TrafX_Count)) * df3$TrafX_Count),0)
 df3$Car_Count <- round(((sum(df1$Cars)/sum(df1$TrafX_Count)) * df3$TrafX_Count),0)
@@ -113,7 +91,7 @@ duplicates <- duplicated(colnames(df4))
 df4 <- df4[!duplicates]
 
 #Save as RDS
-saveRDS(df4, file = 'Dog_Park_Data_File_04262022.RDS')
+saveRDS(df4, file = 'Dog_Park_Data_File_04282022.RDS')
 
 
 
