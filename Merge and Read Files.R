@@ -38,5 +38,5 @@ for (t in files){
                ")
 } 
 setwd('../')
-saveRDS(df1, 'File_Log.R')
-
+saveRDS(df1, 'Data_Log.R')
+saveRDS(files, 'File_Log.R')
