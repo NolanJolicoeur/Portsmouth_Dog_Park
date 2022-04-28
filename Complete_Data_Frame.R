@@ -56,8 +56,8 @@ df3$Date_Time <- paste(df3$Date, df3$Time)
 
 #Create data frame for weather data 
 year1 <- 2022
-month1 <- 2
-day1 <- 12
+month1 <- 1
+day1 <- 1
 year2 <- 2022
 month2 <- 3 
 day2 <- 30
