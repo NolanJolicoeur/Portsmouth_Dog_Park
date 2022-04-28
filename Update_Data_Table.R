@@ -1,17 +1,24 @@
-library(sqldf)
+library(glue)
+library(dplyr)
 library(tidyr)
+library(stringr)
+library(sqldf)
+
+df <- readRDS('Data_Log.R')
+log <- readRDS('File_Log.R')
 process <- function(data1){
-  data1 <- data1
-  df <- read.delim('~/Dog_Park/Shuttle_Files/{data1}')
-  df <- as.data.frame(df)
+  df <- as.data.frame(data1)
   df <- df[grep('00000',df$D),]
   df <- as.data.frame(df)
   df <- df %>% separate(df, c('Year','Month','Day', 'Time','Blank', 'TrafX_Count','Blank2')) 
-  df$TrafX_Count <- as.numeric(df$TrafX_Count)
   df <- sqldf("select Year, Month, Day, Time, TrafX_Count from df")
+  df$TrafX_Count <- as.numeric(df$TrafX_Count)
+  df$Date_Time <- paste( df$Year, df$Month, df$Day, df$Time)
+  df <- sqldf("select Year, Month, Day, Time, sum(TrafX_Count), Date_Time from df group by Date_Time")
+  df <- rename(df, 'TrafX_Count' = 'sum(TrafX_Count)')
   return(df)
 }
-d <- read.delim('~/Dog_Park/Shuttle_Files/ShuttleFile1.TXT')
-a <- process(d)
+
+
 
 
