@@ -24,3 +24,4 @@ for (t in files){
                ")
 } 
 setwd('../')
+files
