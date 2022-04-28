@@ -41,3 +41,24 @@ for (i in New_Files){
 } 
 setwd('../')
 #The new data is added
+
+
+update <- function(data, log){
+  files <- dir('Shuttle_Files')
+  New_Files <- setdiff(log,files)
+  setwd('Shuttle_Files')
+  for (i in New_Files){
+    otherdf <- read.delim(i)
+    otherdf <- process(otherdf)
+    df = sqldf("
+               SELECT * FROM df
+               UNION
+               SELECT * FROM otherdf
+               ")
+  } 
+  setwd('../')
+}
+
+ 
+  
+  
