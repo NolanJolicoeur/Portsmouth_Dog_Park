@@ -20,5 +20,24 @@ process <- function(data1){
 }
 
 
-
-
+#Test Case
+df <- readRDS('Data_Log.R')
+log <- readRDS('File_Log.R')
+files <- dir('Shuttle_Files')
+files <- files[1]
+df <- df %>% top_n(10)
+View(df)
+#Notice that there are only 10 columns in df at this point
+New_Files <- setdiff(log,files)
+setwd('Shuttle_Files')
+for (i in New_Files){
+  otherdf <- read.delim(i)
+  otherdf <- process(otherdf)
+  df = sqldf("
+               SELECT * FROM df
+               UNION
+               SELECT * FROM otherdf
+               ")
+} 
+setwd('../')
+#The new data is added
