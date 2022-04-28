@@ -45,20 +45,40 @@ setwd('../')
 
 update <- function(data, log){
   files <- dir('Shuttle_Files')
-  New_Files <- setdiff(log,files)
+  New_Files <- setdiff(files, log)
   setwd('Shuttle_Files')
   for (i in New_Files){
     otherdf <- read.delim(i)
     otherdf <- process(otherdf)
-    df = sqldf("
-               SELECT * FROM df
+    data = sqldf("
+               SELECT * FROM data
                UNION
                SELECT * FROM otherdf
                ")
   } 
   setwd('../')
+  return(data)
 }
 
- 
-  
-  
+#Test Function 
+df <- readRDS('Data_Log.R')
+log <- readRDS('File_Log.R')
+log1 <- log[1:2]
+files <- dir('Shuttle_Files')
+df10 <- df %>% top_n(10)
+View(df10)
+finaldf <- update(df10, log1)  
+View(finaldf)
+
+
+
+
+
+
+
+
+
+
+
+
+
