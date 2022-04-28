@@ -47,6 +47,13 @@ dfavgtimeofday_graph <- ggplot(dfavgtimeofday_Tall, aes(Count, Value, fill = Key
   labs(title = 'Average Attendance By Time of Day', x = 'Type', y = 'Count', color = 'Key:')+
   geom_col(position = 'dodge')
 dfavgtimeofday_graph
+
+#5 Number Summary Table 
+fivenumbersummarytimeofdaydf <- matrix(c( quantile(dfavgtimeofday$Car_Count), quantile(dfavgtimeofday$Dog_Count), quantile(dfavgtimeofday$Human_Count)), ncol = 3, nrow = 5)
+rownames(fivenumbersummarytimeofdaydf) <- c('Min', '25th', 'Median', '75th', 'Max')
+colnames(fivenumbersummarytimeofdaydf) <- c('Cars', 'Dogs', 'Humans')
+fivenumbersummarytimeofdaytable <- as.table(fivenumbersummarytimeofdaydf)
+fivenumbersummarytimeofdaytable
 ```
 
 ```{r}
@@ -68,6 +75,13 @@ daily_graph <- ggplot(dfdaily, aes(x = Date, group = 1))+
   geom_point(aes(y = Car_Count, color = 'Cars'))+
   scale_y_continuous(breaks = scales::breaks_width(50))
 daily_graph
+
+#5 Number Summary Table 
+fivenumbersummarydailydf <- matrix(c( quantile(dfdaily$Car_Count), quantile(dfdaily$Dog_Count), quantile(dfdaily$Human_Count)), ncol = 3, nrow = 5)
+rownames(fivenumbersummarydailydf) <- c('Min', '25th', 'Median', '75th', 'Max')
+colnames(fivenumbersummarydailydf) <- c('Cars', 'Dogs', 'Humans')
+fivenumbersummarydailytable <- as.table(fivenumbersummarydailydf)
+fivenumbersummarydailytable
 ```
 
 ```{r}
@@ -88,6 +102,14 @@ daily_avg_graph <- ggplot(dfavgdaily, aes(x = factor(Day_Name, weekdays(min(Date
   geom_point(aes(y = Car_Count, color = 'Cars'))+
   lims(y = c(0,200))
 daily_avg_graph
+
+#5 Number Summary Table for graph
+fivenumbersummarydailyavgdf <- matrix(c( quantile(dfavgdaily$Car_Count), quantile(dfavgdaily$Dog_Count), quantile(dfavgdaily$Human_Count)), ncol = 3, nrow = 5)
+rownames(fivenumbersummarydailyavgdf) <- c('Min', '25th', 'Median', '75th', 'Max')
+colnames(fivenumbersummarydailyavgdf) <- c('Cars', 'Dogs', 'Humans')
+fivenumbersummarydailyavgtable <- as.table(fivenumbersummarydailyavgdf)
+fivenumbersummarydailyavgtable
+
 ```
 
 ```{r}
@@ -105,6 +127,26 @@ dfavgDay_Type_graph <- ggplot(dfavgDay_Type_Tall, aes(Count, Value, fill = Key))
   geom_col(position = 'dodge')
 dfavgDay_Type_graph
 
+daydf <- sqldf("select sum(Car_Count), sum(Dog_Count), sum(Human_Count), Day_Type from df1 group by Date")
+daydf <- rename(daydf, 'Car_Count' = 'sum(Car_Count)')
+daydf <- rename(daydf, 'Dog_Count' = 'sum(Dog_Count)')
+daydf <- rename(daydf, 'Human_Count' = 'sum(Human_Count)')
+Weekenddf <- sqldf("select * from daydf where Day_Type = 'Weekend'")
+Weekdaydf <- sqldf("select * from daydf where Day_Type = 'Weekday'")
+
+#5 Number Summary Table for graph
+fivenumbersummarydaytypedf <- matrix(c( quantile(dfavgDay_Type_Tall$Value)), ncol = 1, nrow = 5)
+rownames(fivenumbersummarydaytypedf) <- c('Min', '25th', 'Median', '75th', 'Max')
+colnames(fivenumbersummarydaytypedf) <- c('Count')
+fivenumbersummarydaytypetable <- as.table(fivenumbersummarydaytypedf)
+fivenumbersummarydaytypetable
+
+#5 Number Summary Table for graph
+fivenumbersummarydaytypedf <- matrix(c( quantile(Weekenddf$Car_Count), quantile(Weekenddf$Dog_Count), quantile(Weekenddf$Human_Count), quantile(Weekdaydf$Car_Count), quantile(Weekdaydf$Dog_Count), quantile(Weekdaydf$Human_Count)), ncol = 6, nrow = 5)
+rownames(fivenumbersummarydaytypedf) <- c('Min', '25th', 'Median', '75th', 'Max')
+colnames(fivenumbersummarydaytypedf) <- c('Cars (Weekend)', 'Dogs (Weekend)', 'Humans (Weekend)', 'Cars (Weekdays)', 'Dogs (Weekdays)', 'Humans (Weekdays)')
+fivenumbersummarydaytypetable <- as.table(fivenumbersummarydaytypedf)
+fivenumbersummarydaytypetable
 ```
 
 ```{r}
@@ -141,6 +183,7 @@ dfavgDay_Type_Time_of_Day_Weekday_Tall_graph <- ggplot(dfavgDay_Type_Time_of_Day
   lims(y = c(0,100))
 dfavgDay_Type_Time_of_Day_Weekday_Tall_graph
 grid.arrange(dfavgDay_Type_Time_of_Day_Weekend_Tall_graph, dfavgDay_Type_Time_of_Day_Weekday_Tall_graph, ncol=2)
+
 ```
 
 
@@ -162,6 +205,12 @@ attendance_by_week_graph <- ggplot(attendance_by_week, aes(x = Date, group = 1))
   geom_point(aes(y = Car_Count, color = 'Cars'))
 attendance_by_week_graph
 
+#5 Number Summary Table for graph
+fivenumbersummaryweeklydf <- matrix(c( quantile(attendance_by_week$Car_Count), quantile(attendance_by_week$Dog_Count), quantile(attendance_by_week$Human_Count)), ncol = 3, nrow = 5)
+rownames(fivenumbersummaryweeklydf) <- c('Min', '25th', 'Median', '75th', 'Max')
+colnames(fivenumbersummaryweeklydf) <- c('Cars', 'Dogs', 'Humans')
+fivenumbersummaryweeklytable <- as.table(fivenumbersummaryweeklydf)
+fivenumbersummaryweeklytable
 ```
 
 ```{r}
@@ -181,6 +230,13 @@ attendance_by_month_graph <- ggplot(attendance_by_month, aes(Date, group = 1))+
   geom_line(aes(y = Car_Count), color = 'red')+
   geom_point(aes(y = Car_Count, color = 'Cars'))
 attendance_by_month_graph
+
+#5 Number Summary Table for graph
+fivenumbersummarymonthlydf <- matrix(c( quantile(attendance_by_month$Car_Count), quantile(attendance_by_month$Dog_Count), quantile(attendance_by_month$Human_Count)), ncol = 3, nrow = 5)
+rownames(fivenumbersummarymonthlydf) <- c('Min', '25th', 'Median', '75th', 'Max')
+colnames(fivenumbersummarymonthlydf) <- c('Cars', 'Dogs', 'Humans')
+fivenumbersummarymonthlytable <- as.table(fivenumbersummarymonthlydf)
+fivenumbersummarymonthlytable
 ```
 
 
