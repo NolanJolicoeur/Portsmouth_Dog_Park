@@ -182,8 +182,8 @@ dfavgDay_Type_Time_of_Day_Weekday_Tall_graph <- ggplot(dfavgDay_Type_Time_of_Day
   geom_col(position = 'dodge')+
   lims(y = c(0,100))
 dfavgDay_Type_Time_of_Day_Weekday_Tall_graph
-grid.arrange(dfavgDay_Type_Time_of_Day_Weekend_Tall_graph, dfavgDay_Type_Time_of_Day_Weekday_Tall_graph, ncol=2)
-
+dfavgDay_Type_Time_of_Day_Combined <- grid.arrange(dfavgDay_Type_Time_of_Day_Weekend_Tall_graph, dfavgDay_Type_Time_of_Day_Weekday_Tall_graph, ncol=2)
+dfavgDay_Type_Time_of_Day_Combined
 ```
 
 
