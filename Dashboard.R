@@ -8,6 +8,9 @@ library(ggplot2)
 library(data.table)
 library(tidyverse)
 library(knitr)
+library(kableExtra)
+library(gridExtra)
+library(forcats)
 
 
 ui <- shinyUI(fluidPage(
@@ -19,10 +22,6 @@ ui <- shinyUI(fluidPage(
              sidebarLayout(
                sidebarPanel(
                  fileInput('file1', 'Choose Dog Park TXT File',
-                           accept=c('text/csv', 
-                                    'text/comma-separated-values,text/plain', 
-                                    '.csv')),
-                 fileInput('file2', 'Choose Weather TXT File',
                            accept=c('text/csv', 
                                     'text/comma-separated-values,text/plain', 
                                     '.csv')),
