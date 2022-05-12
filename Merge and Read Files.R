@@ -18,21 +18,21 @@ process <- function(data1){
 }
 
 
-df1 <- data.frame(Year = character(),
+df3 <- data.frame(Year = character(),
                   Month = character(),
                   Day = character(), 
                   Time = character(), 
                   TrafX_Count = integer(),
                   Date_Time = numeric())
-stopifnot(class(df1) == 'data.frame')
-stopifnot(length(colnames(df1)) == 6)
+stopifnot(class(df3) == 'data.frame')
+stopifnot(length(colnames(df3)) == 6)
 files <- dir('Shuttle_Files')
 setwd('Shuttle_Files')
 for (t in files){
   otherdf <- read.delim(t)
   otherdf <- process(otherdf)
-  df1 = sqldf("
-               SELECT * FROM df1
+  df3 = sqldf("
+               SELECT * FROM df3
                UNION
                SELECT * FROM otherdf
                ")

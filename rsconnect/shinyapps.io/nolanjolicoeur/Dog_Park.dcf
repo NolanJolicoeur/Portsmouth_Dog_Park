@@ -1,0 +1,14 @@
+name: Dog_Park
+title: Dog_Park
+username:
+account: nolanjolicoeur
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6282275
+bundleId: 5899691
+url: https://nolanjolicoeur.shinyapps.io/Dog_Park/
+when: 1652372608.71071
+lastSyncTime: 1652372608.71073
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|Codebook.xlsx|Complete_Data_Frame.R|Dashboard.R|Dog_Park_Dashboard/app.R|hjkh/app.R|List of Visuals Needed|Manual Count Data Ratios.R|Manual_Data.csv|merge_data_files.R|Tables and Graphs for Dashboard.R|Tables and Graphs in Markdown.Rmd|toyDatafiles/tbl1.csv|toyDatafiles/tbl2.csv|toyDatafiles/tbl3.csv|Weather_Data.R
