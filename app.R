@@ -18,18 +18,26 @@ ui <- shinyUI(fluidPage(
   titlePanel("Dog Park Dashboard"),
   tabsetPanel(
     tabPanel("Time Period/File Upload",
-             mainPanel(
-               headerPanel('File Upload'),
-               actionButton('Click1', 'Add Data'),
-               textOutput('FileNames'),
-               textInput('Text1', 'Starting Year'),
-               textInput('Text2', 'Starting Month'),
-               textInput('Text3', 'Starting Day'),
-               textInput('Text4', 'Ending Year'),
-               textInput('Text5', 'Ending Month'),
-               textInput('Text6', 'Ending Day'),
-               actionButton('Click', 'Run Data!')
+             fluidRow(
+               column(6, fileInput('file1', 'Choose File',
+                                   accept=c('text/csv', 'text/comma-separated- values,text/plain', '.txt', '.csv'), multiple = T),
+                      actionButton('Click1', 'Add Data!'),
+                      checkboxInput("header", "Header", T)
+               ),
+               
+               # Input: Select a file ----
+               column(6, textOutput('FileNames'),
+                      textInput('Text1', 'Starting Year'),
+                      textInput('Text2', 'Starting Month'),
+                      textInput('Text3', 'Starting Day'),
+                      textInput('Text4', 'Ending Year'),
+                      textInput('Text5', 'Ending Month'),
+                      textInput('Text6', 'Ending Day'),
+                      actionButton('Click', 'Run Data!')),
+               
              )),
+               
+                 
     tabPanel("Daily Summary",
              mainPanel(
                plotOutput('Plot1'),
@@ -54,44 +62,28 @@ ui <- shinyUI(fluidPage(
                plotOutput('Plot7'),
                plotOutput('Plot8'),
                plotOutput('Plot9')
+             )),
+    tabPanel('Waste Bags',
+             mainPanel(
+               plotOutput('Plot10'),
+               textInput('Text7', 'Waste Bag Count'),
+               textInput('Text8', 'Month'),
+               actionButton('Click2', 'Add a Point!')
              ))
   )))
 
 server <- shinyServer(function(input, output) {
-  df3 <- data.frame(Year = character(),
-                    Month = character(),
-                    Day = character(), 
-                    Time = character(), 
-                    TrafX_Count = integer(),
-                    Date_Time = numeric())
-  stopifnot(class(df3) == 'data.frame')
-  stopifnot(length(colnames(df3)) == 6)
-  files <- dir('Shuttle_Files')
-  setwd('Shuttle_Files')
-  for (t in files){
-    otherdf <- read.delim(t)
-    otherdf <- process(otherdf)
-    df3 = sqldf("
-               SELECT * FROM df3
-               UNION
-               SELECT * FROM otherdf
-               ")
-  } 
-  setwd('../')
-  
-  outputDir <- "~/Desktop/DPData"
+  outputDir <- "~/Dog_Park/DPData"
   
   saveData <- function(data) {
-    data <- t(data)
     # Create a unique file name
     fileName <- sprintf("%s_%s.csv", as.integer(Sys.time()), digest::digest(data))
     # Write the file to the local system
     write.csv(
       x = data,
-      file = file.path(outputDir, fileName), 
-      row.names = FALSE, quote = TRUE
-    )
+      file = file.path(outputDir, fileName))
   }
+
   
   loadData <- function() {
     # Read all the files into a list
@@ -114,9 +106,12 @@ server <- shinyServer(function(input, output) {
     df <- rename(df, 'TrafX_Count' = 'sum(TrafX_Count)')
     return(df)}
   
+  #output$FileNames <- renderText()
   observeEvent(input$Click1,{
-    file <- file.choose()
-    NewFile <- read.delim(file)
+    file <- input$file1
+    ext <- tools::file_ext(file$datapath)
+    req(file)
+    NewFile <- read.delim(file$datapath, header = input$header)
     NewFile <- process(NewFile)
     saveData(NewFile)
   })
@@ -147,8 +142,14 @@ server <- shinyServer(function(input, output) {
     
     
     #Create and view data frame for shuttle files
+    df3 <- data.frame(X = integer(),
+                      Year = character(),
+                      Month = character(),
+                      Day = character(), 
+                      Time = character(), 
+                      TrafX_Count = integer(),
+                      Blank = numeric())
     df3 <- loadData()
-    colnames(df3) <- c('Year','Month','Day','Time','TrafX_Count', 'Blank')
     df3 <- sqldf("select Year, Month, Day, Time, TrafX_Count from df3")
     df3$Human_Count <- round(((sum(df1$People)/sum(df1$TrafX_Count)) * df3$TrafX_Count),0)
     df3$Dog_Count <- round(((sum(df1$Dogs)/sum(df1$TrafX_Count)) * df3$TrafX_Count),0)
@@ -179,8 +180,6 @@ server <- shinyServer(function(input, output) {
     df3$Date_Time <- paste(df3$Date, df3$Time)
     
     #Create data frame for weather data 
-    
-    
     url = glue::glue("https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?station=UUU&data=all&year1={year1}&month1={month1}&day1={day1}&year2={year2}&month2={month2}&day2={day2}&tz=Etc%2FUTC&format=onlycomma&latlon=no&elev=no&missing=M&trace=T&direct=no&report_type=1&report_type=2")
     df2 <- read.csv(url)
     df2 <- df2[df2$tmpf != 'M',]
@@ -249,8 +248,8 @@ server <- shinyServer(function(input, output) {
       geom_line(aes(y = Human_Count), color = 'blue')+
       geom_point(aes(y = Human_Count, color = 'Humans'))+ 
       geom_line(aes(y = Car_Count), color = 'red')+
-      geom_point(aes(y = Car_Count, color = 'Cars'))+
-      scale_y_continuous(breaks = scales::breaks_width(50))
+      geom_point(aes(y = Car_Count, color = 'Cars'))
+      #scale_y_continuous(breaks = scales::breaks_width(50))
     output$Plot2 <- renderPlot(daily_graph)
     #Table 
     fivenumbersummarydailydf <- matrix(c( quantile(dfdaily$Car_Count), quantile(dfdaily$Dog_Count), quantile(dfdaily$Human_Count)), ncol = 3, nrow = 5)
@@ -271,8 +270,8 @@ server <- shinyServer(function(input, output) {
       geom_line(aes(y = Human_Count), color = 'blue')+
       geom_point(aes(y = Human_Count, color = 'Humans'))+
       geom_line(aes(y = Car_Count), color = 'red')+
-      geom_point(aes(y = Car_Count, color = 'Cars'))+
-      lims(y = c(0,200))
+      geom_point(aes(y = Car_Count, color = 'Cars'))
+      #lims(y = c(0,200))
     output$Plot3 <- renderPlot(daily_avg_graph)
     #Table 
     fivenumbersummarydailyavgdf <- matrix(c( quantile(dfavgdaily$Car_Count), quantile(dfavgdaily$Dog_Count), quantile(dfavgdaily$Human_Count)), ncol = 3, nrow = 5)
@@ -398,6 +397,20 @@ server <- shinyServer(function(input, output) {
       geom_col(position = 'dodge')
     output$Plot9 <- renderPlot(attendancebywindgraph)
   })
+  Month = c()
+  Count = c()
+  observeEvent(input$Click2, {
+    Count <- input$Text7
+    Month <- input$Text8
+    Month <- append(Month, Month)
+    Count <- append(Count, Count)
+  })
+  x <- data.frame(Month, Count)
+  poop <- ggplot(x, aes(x = Month, y = Count))+
+    geom_point()+
+    geom_line()
+  output$Plot10 <- renderPlot(poop)
+  
 })
 
 shinyApp(ui, server)

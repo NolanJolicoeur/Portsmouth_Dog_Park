@@ -5,10 +5,10 @@ account: nolanjolicoeur
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 6282275
-bundleId: 5899691
+bundleId: 5919442
 url: https://nolanjolicoeur.shinyapps.io/Dog_Park/
-when: 1652372608.71071
-lastSyncTime: 1652372608.71073
+when: 1652886589.36298
+lastSyncTime: 1652886589.363
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .RData|Codebook.xlsx|Complete_Data_Frame.R|Dashboard.R|Dog_Park_Dashboard/app.R|hjkh/app.R|List of Visuals Needed|Manual Count Data Ratios.R|Manual_Data.csv|merge_data_files.R|Tables and Graphs for Dashboard.R|Tables and Graphs in Markdown.Rmd|toyDatafiles/tbl1.csv|toyDatafiles/tbl2.csv|toyDatafiles/tbl3.csv|Weather_Data.R
+ignoredFiles: .httr-oauth|.Rapp.history|.RData|Codebook.xlsx|Complete_Data_Frame.R|Dashboard.R|Data_Log.R|Dog_Park_Dashboard/app.R|Dog_Park_Data_File_04282022.RDS|Dog_Park_Test_App/app1.R|Dog_Park_Test_App/Data_Log.R|Dog_Park_Test_App/File_Log.R|DPData/.DS_Store|DPData/1652882016_7580d64b34d3cbcd08fc24a8650157d9.csv|DPData/1652882031_07216bd87a32b30dd28947efa32aaa3f.csv|DPData/1652886313_5f2e2c2b6e57c68481cdf3dbd76a3e2b.csv|File_Log.R|hjkh/app.R|List of Visuals Needed|Manual Count Data Ratios.R|Manual_Data.csv|Merge and Read Files.R|merge_data_files.R|Shuttle_Files/.DS_Store|Shuttle_Files/ShuttleFile1.TXT|Shuttle_Files/ShuttleFile2.TXT|Shuttle_Files/ShuttleFile3.TXT|Tables and Graphs for Dashboard.R|Tables and Graphs in Markdown.Rmd|toyDatafiles/tbl1.csv|toyDatafiles/tbl2.csv|toyDatafiles/tbl3.csv|Update_Data_Table.R|Weather_Data.R
