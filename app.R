@@ -1,3 +1,4 @@
+#Load in all the necessary packages.
 library(shiny)
 library(stringr)
 library(tidyr)
@@ -14,9 +15,11 @@ library(forcats)
 library(RSQLite)
 library(rdrop2)
 library(googlesheets4)
-
+#grant access to the google sheets which the data is being uploaded to and pulled from.
 gs4_auth(cache = "1S4IM2z4yeALESsEQ3WmcTBxWubonVxs8htxbeXuLnyE", email = "nolanjoli@gmail.com")
 gs4_auth(cache = "1PFyV6ZRtVZwAeL2Yd7U612iIdHUEx4QQ1MUM_oBoM48", email = "nolanjoli@gmail.com")
+
+#The UI is the format for the visual components of the dashboard. 
 ui <- shinyUI(fluidPage(
   #Main Page Title and tab to upload files for dog park data and weather data. 
   titlePanel("Dog Park Dashboard"),
@@ -32,7 +35,7 @@ ui <- shinyUI(fluidPage(
                       checkboxInput("header", "Header", T)
                ),
                
-               # Input: Select a file ----
+               # Manually selected date range 
                column(9, textOutput('FileNames'),
                       column(3, textInput('Text2', 'Starting Month'),
                              textInput('Text5', 'Ending Month')),
@@ -42,6 +45,7 @@ ui <- shinyUI(fluidPage(
                              textInput('Text4', 'Ending Year'),
                              actionButton('Click', 'Run Data!'))),
              ),
+             #Overview of data for dashboard
              titlePanel('Portsmouth Dog Park at a Glance'),
              textOutput('Label1'),
              textOutput('Range1'),
@@ -56,7 +60,7 @@ ui <- shinyUI(fluidPage(
              plotOutput('Plot16'),
              plotOutput('Plot17')),
     
-    
+    #Daily data tab
     tabPanel("Daily Summary",
              mainPanel(
                textOutput('Label2'),
@@ -67,6 +71,8 @@ ui <- shinyUI(fluidPage(
                tableOutput('Table2'),
                plotOutput('Plot3')
              )),
+    
+    #Weekend vs Weekday tab
     tabPanel('Weekend vs Weekday',
              mainPanel(
                textOutput('Label3'),
@@ -75,6 +81,8 @@ ui <- shinyUI(fluidPage(
                tableOutput('Table4'),
                plotOutput('Plot5')
              )),
+    
+    #Monthly and Seasonal data tab
     tabPanel('Monthly/Seasonal Summary',
              mainPanel(
                textOutput('Label4'),
@@ -84,6 +92,8 @@ ui <- shinyUI(fluidPage(
                plotOutput('Plot18'),
                tableOutput('Table9')
              )),
+    
+    #Weather data tab
     tabPanel('Weather Summary',
              mainPanel(
                textOutput('Label5'),
@@ -95,6 +105,8 @@ ui <- shinyUI(fluidPage(
                plotOutput('Plot12'),
                plotOutput('Plot13')
              )),
+    
+    #Waste bag tab 
     tabPanel('Waste Bags',
              plotOutput('Plot10'),
              mainPanel(
@@ -106,9 +118,12 @@ ui <- shinyUI(fluidPage(
              ))
   )))
 
+#The server is the componenet of the dashboard behind the scenes that makes everythin run. 
+#R-Shiny is reactive so it requires buttons or inputs to trigger graphs or any other visuals to appear. 
 server <- shinyServer(function(input, output) {
   outputDir <- "Data"
-  
+
+  #This is a function that takes the data from the shuttle files and configures it into a readable data frame. 
   process <- function(data1){
     df <- as.data.frame(data1)
     df <- df[grep('00000',df$D),]
@@ -122,6 +137,7 @@ server <- shinyServer(function(input, output) {
     df <- rename(df, 'TrafX_Count' = 'sum(TrafX_Count)')
     return(df)}
   
+  #This code chunk takes the data from the shuttle file and uploades it into the google sheet
   df <- read_sheet("https://docs.google.com/spreadsheets/d/1S4IM2z4yeALESsEQ3WmcTBxWubonVxs8htxbeXuLnyE/edit#gid=1152415696")
   output$recent <- renderText('Date Range of Data Uploaded:')
   recentdate <- tail(df$Date, 1)
@@ -144,6 +160,8 @@ server <- shinyServer(function(input, output) {
     output$RecentData <- renderText(recentdate)
   })
   
+  
+  #This code pulls data from within a certain time frame. 
   observeEvent(input$Click, {
     year1 <- input$Text1
     month1 <- input$Text2
@@ -162,7 +180,8 @@ server <- shinyServer(function(input, output) {
     output$Range4 <- renderText(range)
     output$Label5 <- renderText('User Inputted Date Range:')
     output$Range5 <- renderText(range)
-    #Data input
+    
+    #This code pulls the data from the manual dog counts and organizes it to find ratios. 
     df1 <- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQeQ0YiEBVASJN0EukDk3Y6CB8rf9aaQJ-d0ViW_nWYf_3gsHHcYu87eKQIgzFOpM_mV9stuA75x0zw/pub?gid=0&single=true&output=csv")
     df1$Day_Name <- weekdays(df1$Date, abbreviate = FALSE)
     weekdays1 <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
@@ -180,7 +199,8 @@ server <- shinyServer(function(input, output) {
     rownames(ratio_table) <- c('People', 'Dogs', 'Cars')
     
     
-    
+    #This code reads the data from the shuttle file spreadsheet and organizes it with more columns.  
+    #It also applies the ratios from the previous code chunk. 
     df3 <- read_sheet("https://docs.google.com/spreadsheets/d/1S4IM2z4yeALESsEQ3WmcTBxWubonVxs8htxbeXuLnyE/edit#gid=1152415696")
     df3 <- sqldf("select Year, Month, Day, Time, TrafX_Count from df3")
     df3$Human_Count <- round(((sum(df1$People)/sum(df1$TrafX_Count)) * df3$TrafX_Count),0)
@@ -211,7 +231,7 @@ server <- shinyServer(function(input, output) {
     df3 <- df3 %>% mutate(Week = cut.Date(Date, breaks = "1 week", labels = FALSE)) %>% arrange(Date)
     df3$Date_Time <- paste(df3$Date, df3$Time)
     
-    #Create data frame for weather data 
+    #This creates the data frame for weather data 
     url = glue::glue("https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?station=UUU&data=all&year1={year1}&month1={month1}&day1={day1}&year2={year2}&month2={month2}&day2={day2}&tz=Etc%2FUTC&format=onlycomma&latlon=no&elev=no&missing=M&trace=T&direct=no&report_type=1&report_type=2")
     df2 <- read.csv(url)
     df2 <- df2[df2$tmpf != 'M',]
